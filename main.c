@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define TAM_PAL 21
+#define QUANT_ARQS 4
 #define QUANT_CATEGORIAS 3
 #define QUANT_PALAVRAS 5
 
@@ -12,28 +14,107 @@ typedef struct tipo_categorias{
     char palavras[QUANT_PALAVRAS][21];
 }Categoria;
 
+typedef struct tipo_forca{
+    char palavra[TAM_PAL ];
+    char visualizacao[TAM_PAL];
+    char dica[TAM_PAL];
+    int quantLetras;
+}Forca;
+
 int contagem=0;
 
-int escolherPalavra(Categoria categorias[], char palavraEscolhida[], char palavraEscondida[]){
-    int i=0, j=0, k=0;
+void escolherPalavra(Forca * forca);
+void mostrarPalavra(char palavraEscondida[], char dica[]);
+int fazerJogada(char palavraEscolhida[], char palavraEscondida[]);
+int interface(char palavraEscolhida[], char palavraEscondida[], char dica[]);
 
-    i = rand() % QUANT_CATEGORIAS;
-    j = rand() % QUANT_PALAVRAS;
+int main(){
+    srand(time(NULL));
+    Forca forca;
+    escolherPalavra(&forca);
+    interface(forca.palavra, forca.visualizacao, forca.dica);
+    return 0;
+}
 
-    strcpy(palavraEscolhida, categorias[i].palavras[j]);
+void escolherPalavra(Forca * forca){
+    FILE * f_Arq;
 
-    for(k=0; k<strlen(palavraEscolhida); k++){
-        if(palavraEscolhida[k]!='-'){
-            palavraEscondida[k] = '_';
+    char arquivos[QUANT_ARQS][30] = {
+        {"palavras\\animais.txt"},
+        {"palavras\\comidas.txt"},
+        {"palavras\\veiculos.txt"},
+        {"palavras\\objetos.txt"}
+    };
+
+    int arqAle = rand() % QUANT_ARQS;
+    f_Arq = fopen(arquivos[arqAle], "r");
+
+    if(f_Arq == NULL){
+        f_Arq = fopen(arquivos[arqAle], "w");
+        fprintf(f_Arq, "Arquivo: '%s'\n", arquivos[arqAle]);
+        fclose(f_Arq);
+        return 0;
+    }
+
+    switch(arqAle){
+        case 0:
+            strcpy(forca->dica, "Animal");
+            break;
+
+        case 1:
+            strcpy(forca->dica, "Comida");
+            break;
+
+        case 2:
+            strcpy(forca->dica, "Veiculo");
+            break;
+
+        case 3:
+            strcpy(forca->dica, "Objetos");
+            break;
+    }
+
+    char temp[TAM_PAL];
+    int quantPal=0;
+
+    while(fgets(temp, TAM_PAL, f_Arq)!=NULL){
+        quantPal++;
+    }
+
+    rewind(f_Arq);
+
+    int palAle = rand() % quantPal;
+
+    for(int i=0; i<=palAle; i++){
+        fgets(forca->palavra, TAM_PAL, f_Arq);
+    }
+
+    forca->palavra[strlen(forca->palavra)-1] = '\0';
+
+    fclose(f_Arq);
+
+    int i;
+    forca->quantLetras = 0;
+
+    for(i=0; i<strlen(forca->palavra); i++){
+        if(forca->palavra[i] != '-'){
+            forca->visualizacao[i] = '_';
+            forca->quantLetras++;
         }
         else{
-            palavraEscondida[k] = '-';
+            forca->visualizacao[i] = '-';
         }
     }
 
-    palavraEscondida[k] = '\0';
+    forca->visualizacao[i] = '\0';
 
-    return i;
+    // printf("Quantidade de palavras: %i\n\n", quantPal);
+
+    // printf("Cod. Pal: %i\n", palAle);
+    // printf("Palavra: %s\n", forca->palavra);
+    // printf("Visuali: %s\n", forca->visualizacao);
+    // printf("Dica:    %s\n", forca->dica);
+    // printf("Q Letra: %i\n\n", forca->quantLetras);
 }
 
 void mostrarPalavra(char palavraEscondida[], char dica[]){
@@ -133,24 +214,4 @@ int interface(char palavraEscolhida[], char palavraEscondida[], char dica[]){
     }
 
     system("pause");
-}
-
-int main(){
-    srand(time(NULL));
-
-    Categoria categorias[QUANT_CATEGORIAS] = {
-        {"Animal", {"LAGARTO", "GATO", "CACHORRO", "ELEFANTE", "BODE"}},
-        {"Veiculo", {"ONIBUS", "CAMINHAO", "CARRO", "AVIAO", "HELICOPTERO"}},
-        {"Comida", {"ARROZ", "FEIJAO", "MACARRAO", "CAMAROADA", "HAMBURGUER"}}
-    };
-
-    char palavraEscolhida[21];
-
-    char palavraEscondida[21];
-
-    int dica = escolherPalavra(categorias, palavraEscolhida, palavraEscondida);
-
-    interface(palavraEscolhida, palavraEscondida, categorias[dica].nomeCategoria);
-
-
 }
