@@ -3,11 +3,13 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include "menu.h"
 
 #define TAM_PAL 21
 #define QUANT_ARQS 4
 #define QUANT_CATEGORIAS 3
 #define QUANT_PALAVRAS 5
+#define QUANT_TEMPO 60
 
 typedef struct tipo_categorias{
     char nomeCategoria[21];
@@ -18,21 +20,50 @@ typedef struct tipo_forca{
     char palavra[TAM_PAL ];
     char visualizacao[TAM_PAL];
     char dica[TAM_PAL];
-    int quantLetras;
+    char digitadas[27];
+    int  contagem;
+    int  quantLetras;
 }Forca;
 
-int contagem=0;
+
 
 void escolherPalavra(Forca * forca);
-void mostrarPalavra(char palavraEscondida[], char dica[]);
-int fazerJogada(char palavraEscolhida[], char palavraEscondida[]);
-int interface(char palavraEscolhida[], char palavraEscondida[], char dica[]);
+void mostrarPalavra (Forca * forca);
+int fazerJogada     (Forca * forca);
+void jogar       (Forca * forca);
+void exibirMensagemVitoria();
+void exibirMensagemDerrota();
+
+void inicializar(Forca * forca){
+    int i;
+
+    for(i=0; i<TAM_PAL; i++){
+        forca->palavra[i] = ' ';
+        forca->visualizacao[i] = ' ';
+        forca->dica[i] = ' ';
+    }
+
+    forca->palavra[i] = '\0';
+    forca->visualizacao[i] = '\0';
+    forca->dica[i] = '\0';
+
+    for(i=0; i<27; i++){
+        forca->digitadas[i] = ' ';
+    }
+    forca->digitadas[i] = '\0';
+
+    forca->contagem = 0;
+    forca->quantLetras = 0;
+}
 
 int main(){
     srand(time(NULL));
-    Forca forca;
-    escolherPalavra(&forca);
-    interface(forca.palavra, forca.visualizacao, forca.dica);
+    if(menu() == 1){
+        Forca forca;
+        inicializar(&forca);
+        escolherPalavra(&forca);
+        jogar(&forca);
+    }
     return 0;
 }
 
@@ -53,7 +84,7 @@ void escolherPalavra(Forca * forca){
         f_Arq = fopen(arquivos[arqAle], "w");
         fprintf(f_Arq, "Arquivo: '%s'\n", arquivos[arqAle]);
         fclose(f_Arq);
-        return 0;
+        return;
     }
 
     switch(arqAle){
@@ -93,7 +124,7 @@ void escolherPalavra(Forca * forca){
 
     fclose(f_Arq);
 
-    int i;
+    unsigned int i;
     forca->quantLetras = 0;
 
     for(i=0; i<strlen(forca->palavra); i++){
@@ -117,43 +148,75 @@ void escolherPalavra(Forca * forca){
     // printf("Q Letra: %i\n\n", forca->quantLetras);
 }
 
-void mostrarPalavra(char palavraEscondida[], char dica[]){
-
-    printf("Dica: %s\n\n", dica);
-
-    for(int j=0;j<strlen(palavraEscondida);j++){
-        printf("%c ", palavraEscondida[j]);
+void mostrarPalavra(Forca * forca){
+    for(int i=0;i<forca->quantLetras;i++){
+        printf("%c ", forca->visualizacao[i]);
     }
 
     printf("\n\n");
 }
 
-int fazerJogada(char palavraEscolhida[], char palavraEscondida[]){
+int fazerJogada(Forca * forca){
     int encontrou=0;
     char letra;
 
     printf("\n\nDigite uma letra: ");
-    scanf("%c", &letra);
-    setbuf(stdin, NULL);
+    
+    if(kbhit()){
+        letra = getch();
 
-    letra = toupper(letra);
-
-    for(int i=0; i<strlen(palavraEscolhida); i++){
-        if(letra == palavraEscolhida[i]){
-            encontrou++;
-
-            palavraEscondida[i] = palavraEscolhida[i];
+        letra = toupper(letra);
+        
+        for(int i=0; i<=forca->contagem; i++){
+            if(forca->digitadas[i] == letra){
+                return -1;
+            }
         }
+        
+            forca->digitadas[forca->contagem] = letra;
+            forca->contagem++;
+        
+        /*forca->digitadas[forca->contagem] = letra;
+        forca->contagem++;*/
+
+        for(int i=0; i<forca->quantLetras; i++){
+            if(letra == forca->palavra[i]){
+                forca->visualizacao[i] = forca->palavra[i];
+                encontrou++;
+            }
+        }
+
+        return encontrou;
     }
 
-    return encontrou;
+    return -2;
 }
 
-int interface(char palavraEscolhida[], char palavraEscondida[], char dica[]){
+void jogar(Forca * forca){
+
+    textcolor(RED);
+    backgroundcolor(BLACK);
 
     int encontrados=0, erros=7, contador=0;
-    
-    while(erros!=0 && contador!=strlen(palavraEscolhida)){
+    time_t tempoFinal, tempoAtual;
+    system("cls");
+
+    tempoFinal = time(NULL) + 10;
+
+    do{
+        tempoAtual = time(NULL);
+
+        printf("Voce tem %i segundos restantes!\n", tempoFinal - tempoAtual);
+
+        printf("Letras Digitadas: ");
+        for(int i=0;forca->digitadas[i]!='\0';i++){
+            printf("%c ", forca->digitadas[i]);
+        }
+
+        printf("\n\n");
+        printf("DICA: %s", forca->dica);
+        printf("\n\n");
+
         printf("  _______       \n");
         printf(" |/      |      \n");
         printf(" |      %s      \n", erros < 7 ? "(_)":" ");
@@ -162,56 +225,69 @@ int interface(char palavraEscolhida[], char palavraEscondida[], char dica[]){
         printf(" |      %c %c    \n", erros < 2 ? '/':' ', erros < 1 ? '\\': ' ');
         printf(" |              \n");
         printf("_|___           \n\n");
-        
-        mostrarPalavra(palavraEscondida, dica);
-        encontrados = fazerJogada(palavraEscolhida, palavraEscondida);
 
-        if(encontrados == 0){
+        mostrarPalavra(forca);
+        encontrados = fazerJogada(forca);
+
+        if(encontrados == -1){
+            printf("Letra ja digitada!\n");
+            continue;
+        }
+        else if(encontrados == 0){
             erros--;
             printf("\n\nVoce so pode errar mais %d vez(es)\n\n", erros);
         }
-        
-        
+
         contador += encontrados;
 
-        system("pause");
+        if(erros==0){
+            exibirMensagemDerrota();
+            return;
+        }
+
+        if(contador==forca->quantLetras){
+            exibirMensagemVitoria();
+            return;
+        }
+
         system("cls");
-    }
-    
-    mostrarPalavra(palavraEscondida, dica);
 
-    if(erros != 0){
-        printf("\n\nPARABENS, VOCE VENCEU\n\n");
-        printf("       ___________      \n");
-        printf("      '._==_==_=_.'     \n");
-        printf("      .-\\:      /-.    \n");
-        printf("     | (|:.     |) |    \n");
-        printf("      '-|:.     |-'     \n");
-        printf("        \\::.    /      \n");
-        printf("         '::. .'        \n");
-        printf("           ) (          \n");
-        printf("         _.' '._        \n");
-        printf("        '-------'       \n\n");
-    }
-    else{
-        printf("\n\nQUE PENA, VOCE PERDEU\n\n");
-        printf("    _______________         \n");
-        printf("   /               \\       \n"); 
-        printf("  /                 \\      \n");
-        printf("//                   \\/\\  \n");
-        printf("\\|   XXXX     XXXX   | /   \n");
-        printf(" |   XXXX     XXXX   |/     \n");
-        printf(" |   XXX       XXX   |      \n");
-        printf(" |                   |      \n");
-        printf(" \\__      XXX      __/     \n");
-        printf("   |\\     XXX     /|       \n");
-        printf("   | |           | |        \n");
-        printf("   | I I I I I I I |        \n");
-        printf("   |  I I I I I I  |        \n");
-        printf("   \\_             _/       \n");
-        printf("     \\_         _/         \n");
-        printf("       \\_______/           \n\n");
-    }
+    }while(tempoFinal != tempoAtual);
 
-    system("pause");
+    printf("O tempo acabou!");
+    exibirMensagemDerrota();
+}
+
+void exibirMensagemVitoria(){
+    printf("\n\nPARABENS, VOCE VENCEU\n\n");
+    printf("       ___________      \n");
+    printf("      '._==_==_=_.'     \n");
+    printf("      .-\\:      /-.    \n");
+    printf("     | (|:.     |) |    \n");
+    printf("      '-|:.     |-'     \n");
+    printf("        \\::.    /      \n");
+    printf("         '::. .'        \n");
+    printf("           ) (          \n");
+    printf("         _.' '._        \n");
+    printf("        '-------'       \n\n");
+}
+
+void exibirMensagemDerrota(){
+    printf("\n\nQUE PENA, VOCE PERDEU\n\n");
+    printf("    _______________         \n");
+    printf("   /               \\       \n");
+    printf("  /                 \\      \n");
+    printf("//                   \\/\\  \n");
+    printf("\\|   XXXX     XXXX   | /   \n");
+    printf(" |   XXXX     XXXX   |/     \n");
+    printf(" |   XXX       XXX   |      \n");
+    printf(" |                   |      \n");
+    printf(" \\__      XXX      __/     \n");
+    printf("   |\\     XXX     /|       \n");
+    printf("   | |           | |        \n");
+    printf("   | I I I I I I I |        \n");
+    printf("   |  I I I I I I  |        \n");
+    printf("   \\_             _/       \n");
+    printf("     \\_         _/         \n");
+    printf("       \\_______/           \n\n");
 }
