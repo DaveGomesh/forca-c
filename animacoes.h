@@ -31,13 +31,20 @@ void exibirMensagemBemVindo(){
         {"((_)_((_)(_()((_) ((_)((_)_))  _((_)_))_   ((_)  "} //450
     };
 
+    char bemVindo[4][55] = {
+        {"  _ _  _  _    _    _   _ _    _  _ _  _     _  \n"},
+        {" | _ ) __|  \\/  | \\ \\ / /|_ _|| \\| ||   \\ / _ \\ \n"},
+        {" | _ \\ _|| |\\/| |  \\ V /  | | | .` || |) | (_) |\n"},
+        {" |___/___|_|  |_|   \\_/  |___||_|\\_||___/ \\___/ \n\n"}
+    };
+
     //Coloca a mensagem de bem vindo
-    gotoxy(1,5);
     textcolor(RED);
-    printf("  _ _  _  _    _    _   _ _    _  _ _  _     _  \n"); 
-    printf(" | _ ) __|  \\/  | \\ \\ / /|_ _|| \\| ||   \\ / _ \\ \n"); 
-    printf(" | _ \\ _|| |\\/| |  \\ V /  | | | .` || |) | (_) |\n"); 
-    printf(" |___/___|_|  |_|   \\_/  |___||_|\\_||___/ \\___/ \n");
+    for(int i=3; i>=0; i--){
+        gotoxy(1,i+5);
+        printf("%s", bemVindo[i]);
+        Sleep(80);
+    }
 
     //Exibe o fogo de baixo pra cima e modo aleatorio na horizontal
     for(int i=5; i>0; i--){
@@ -124,7 +131,16 @@ void exibirLoading(){
     printf("|  |__|  |  |     |  |  |-   -| | | |  |  |  \n");
     textcolor(RED);
     printf("|_____|_____|__|__|____/|_____|_|___|_____|  \n");
-    Sleep(500);
+    Sleep(100);
+
+    char copyrigths[70] = "\nCopyright (c) 2020 David Gomesh e Lucas Nadler\n";
+
+    textcolor(LIGHTGRAY);
+    for(int i=0; copyrigths[i]!='\0'; i++){
+        printf("%c", copyrigths[i]);
+        Sleep(10);
+    }
+    textcolor(RED);
 
     //Controla a animacao dos pontos do Loading, fazendo os aparecer e desaparecer 3 vezes
     for(int i=0;i<6;i++){
@@ -184,19 +200,20 @@ void exibirConteudoMenuPrincipal(){
     printf("\\|/        \n");
     textcolor(RED);
     Sleep(50);
-    printf("  %c SOBRE", 250);
-    printf("                      |       ");
+    printf("  %c NEW WORD", 250);
+    printf("                   |       ");
     textcolor(WHITE);
     printf("|        \n");
     textcolor(RED);
     Sleep(50);
-    printf("  %c SAIR", 250);
-    printf("                       |      ");
+    printf("  %c SOBRE", 250);
+    printf("                      |      ");
     textcolor(WHITE);
     printf("/ \\        \n");
     textcolor(RED);
     Sleep(50);
-    printf("                               |              \n");
+    printf("  %c SAIR", 250);
+    printf("                       |              \n");
     Sleep(50);
     printf("                              _|___           \n\n");
 }

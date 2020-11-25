@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "animacoes.h"
 #include "menu.h"
 #include "forca.h"
@@ -8,7 +6,8 @@ int main(){
     srand(time(NULL));
     int opcao;
 
-    // exibirBoasVindas();
+    exibirBoasVindas();
+
     do{
         opcao = exibirMenuPrincipal();
         switch(opcao){
@@ -23,10 +22,14 @@ int main(){
             break;
 
             case 3:
-                exibirSobre();
+                adicionarPalavra();
             break;
 
             case 4:
+                exibirSobre();
+            break;
+
+            case 5:
                 //Sair
             break;
 
@@ -34,7 +37,7 @@ int main(){
                 //Opcao invalida
             break;
         }
-    }while(opcao!=4); //4 == Sair
+    }while(opcao!=5); //5 == Sair
 
     return 0;
 }

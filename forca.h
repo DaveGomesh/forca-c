@@ -9,7 +9,7 @@
 
 // Constantes importantes do jogo
 #define TAM_PALAVRAS 71
-#define QUANT_ARQS 4
+#define QUANT_ARQS 5
 #define QUANT_CATEGORIAS 3
 #define QUANT_PALAVRAS 5
 #define QUANT_TEMPO 60
@@ -22,6 +22,7 @@ typedef struct tipo_forca{
     char digitadas[27];
     int  quantLetras;
     int  quantLetrasDiferentes;
+    int  quantTempo;
 } Forca;
 
 // Declaracao de Funcoes
@@ -51,11 +52,13 @@ void escolherPalavra(Forca * forca){
         {"palavras\\animais.txt"},
         {"palavras\\comidas.txt"},
         {"palavras\\veiculos.txt"},
-        {"palavras\\objetos.txt"}
+        {"palavras\\objetos.txt"},
+        {"palavras\\outros.txt"}
     };
 
     //Gera um numero aleatorio pra abrir o arquivo
-    int arqAle = rand() % QUANT_ARQS;
+    // int arqAle = rand() % QUANT_ARQS;
+    int arqAle = 4;
     f_Arq = fopen(arquivos[arqAle], "r");
 
     //Caso esse arquivo nao possa ser aberto ele sera criado
@@ -83,6 +86,10 @@ void escolherPalavra(Forca * forca){
         case 3:
             strcpy(forca->dica, "Objetos");
             break;
+
+        case 4:
+            strcpy(forca->dica, "SEM DICAS");
+            break;
     }
 
     char temp[TAM_PALAVRAS];
@@ -107,6 +114,9 @@ void escolherPalavra(Forca * forca){
     //Remove o '\n' e coloca o '\0' na string
     forca->palavra[strlen(forca->palavra)-1] = '\0';
 
+    //Coloca todas as letras da palavra em maiusculo
+    strupr(forca->palavra);
+
     //Fecha o arquivo
     fclose(f_Arq);
 
@@ -123,6 +133,13 @@ void escolherPalavra(Forca * forca){
         else{
             forca->visualizacao[i] = '-';
         }
+    }
+
+    if(forca->quantLetras <= 10){
+        forca->quantTempo = QUANT_TEMPO;
+    }
+    else{
+        forca->quantTempo = 30 + QUANT_TEMPO;
     }
 
     forca->visualizacao[i] = '\0';
@@ -174,7 +191,7 @@ int fazerJogada(Forca * forca){
         forca->digitadas[forca->quantLetrasDiferentes] = '\0';
 
         //Procura essa letra na palavra, guardando quantas vezes ela foi encontrada
-        for(int i=0; i<strlen(forca->palavra); i++){
+        for(unsigned int i=0; i<strlen(forca->palavra); i++){
             if(letra == forca->palavra[i]){
                 forca->visualizacao[i] = forca->palavra[i];
                 encontrou++;
@@ -199,8 +216,8 @@ void jogar(Forca * forca){
     system("cls");
 
     //Obtem o tempo final do jogo
-    tempoFinal = time(NULL) + QUANT_TEMPO;
-    tempoRestante = QUANT_TEMPO;
+    tempoFinal = time(NULL) + forca->quantTempo;
+    tempoRestante = forca->quantTempo;
 
     //Exibe a interface do jogo inicial
     exibirTempoRestante(tempoRestante);
@@ -295,16 +312,25 @@ void jogar(Forca * forca){
 // Exibe o tempo restante para acabar o jogo
 void exibirTempoRestante(int tempRest){
     gotoxy(1,1);
-    printf("Voce tem %i segundos restantes!\n", tempRest);
+    printf("Voce tem ");
+
+    textcolor(LIGHTGRAY);
+    printf("%i", tempRest);
+    textcolor(RED);
+
+    printf(" segundos restantes!\n");
 }
 
 // Exibe as letras digitadas no jogo
 void exibirLetrasDigitadas(Forca * forca){
     gotoxy(1, 2);
     printf("Letras Digitadas: ");
+
+    textcolor(LIGHTGRAY);
     for(int i=0;forca->digitadas[i]!='\0';i++){
         printf("%c ", forca->digitadas[i]);
     }
+    textcolor(RED);
 }
 
 // Exibe a dica do jogo
@@ -348,7 +374,7 @@ void exibirForca(int chances){
 // Exibe o que esta guardado em visualizacao
 void exibirPalavra(Forca * forca){
     gotoxy(1, 15);
-    for(int i=0;i<strlen(forca->palavra);i++){
+    for(unsigned int i=0;i<strlen(forca->palavra);i++){
         printf("%c ", forca->visualizacao[i]);
     }
 
@@ -358,7 +384,10 @@ void exibirPalavra(Forca * forca){
 // Exibe a quantidade de chances restantes
 void exibirChances(int chances){
     gotoxy(1, 17);
-    printf("CHANCES: %i\n", chances);
+    printf("CHANCES: ");
+    textcolor(LIGHTGRAY);
+    printf("%i\n", chances);
+    textcolor(RED);
 
     //Remove uma possivel mensagem de "Letra ja digitada" que talvez possa ter
     gotoxy(1, 19);
@@ -367,42 +396,64 @@ void exibirChances(int chances){
 
 // Mensagem de vitoria
 void exibirMensagemVitoria(){
-    printf("\nPARABENS, VOCE VENCEU\n\n");
-    printf("       ___________      \n");
-    printf("      '._==_==_=_.'     \n");
-    printf("      .-\\:      /-.    \n");
-    printf("     | (|:.     |) |    \n");
-    printf("      '-|:.     |-'     \n");
-    printf("        \\::.    /      \n");
-    printf("         '::. .'        \n");
-    printf("           ) (          \n");
-    printf("         _.' '._        \n");
-    printf("        '-------'       \n\n");
-    printf("Dessa vez voce escapou...\n");
-    printf("Pressione qualquer tecla para continuar...");
+    char trofeu[10][35] = {
+        {"       ___________      \n"},
+        {"      '._==_==_=_.'     \n"},
+        {"      .-\\:      /-.    \n"},
+        {"     | (|:.     |) |    \n"},
+        {"      '-|:.     |-'     \n"},
+        {"        \\::.    /      \n"},
+        {"         '::. .'        \n"},
+        {"           ) (          \n"},
+        {"         _.' '._        \n"},
+        {"        '-------'       \n\n"}
+    };
+
+    textcolor(LIGHTGRAY);
+    printf("\nPARABENS, VOCE VENCEU!\n\n");
+    textcolor(RED);
+
+    for(int i=0; i<10; i++){
+        Sleep(50);
+        printf("%s", trofeu[i]);
+    }
+
+    textcolor(LIGHTGRAY);
+    printf("Dessa vez voce escapou...\n\n");
+    textcolor(RED);
+    
+    printf("Pressione qualquer tecla e saia daqui...");
     getch();
 }
 
 // Mensagem de derrota
 void exibirMensagemDerrota(){
-    printf("\n\nQUE PENA, VOCE PERDEU\n\n");
-    printf("    _______________         \n");
-    printf("   /               \\       \n");
-    printf("  /                 \\      \n");
-    printf("//                   \\/\\  \n");
-    printf("\\|   XXXX     XXXX   | /   \n");
-    printf(" |   XXXX     XXXX   |/     \n");
-    printf(" |   XXX       XXX   |      \n");
-    printf(" |                   |      \n");
-    printf(" \\__      XXX      __/     \n");
-    printf("   |\\     XXX     /|       \n");
-    printf("   | |           | |        \n");
-    printf("   | I I I I I I I |        \n");
-    printf("   |  I I I I I I  |        \n");
-    printf("   \\_             _/       \n");
-    printf("     \\_         _/         \n");
-    printf("       \\_______/           \n\n");
-    printf("Pressione qualquer tecla para continuar...");
+    char caveira[16][35] = {
+        {"    _______________         \n"},
+        {"   /               \\       \n"},
+        {"  /                 \\      \n"},
+        {"//                   \\/\\  \n"},
+        {"\\|   XXXX     XXXX   | /   \n"},
+        {" |   XXXX     XXXX   |/     \n"},
+        {" |   XXX       XXX   |      \n"},
+        {" |                   |      \n"},
+        {" \\__      XXX      __/     \n"},
+        {"   |\\     XXX     /|       \n"},
+        {"   | |           | |        \n"},
+        {"   | I I I I I I I |        \n"},
+        {"   |  I I I I I I  |        \n"},
+        {"   \\_             _/       \n"},
+        {"     \\_         _/         \n"},
+        {"       \\_______/           \n\n"}
+    };
+
+    printf("\nQUE PENA, VOCE PERDEU\n\n");
+
+    for(int i=0; i<16; i++){
+        Sleep(50);
+        printf("%s", caveira[i]);
+    }
+    printf("Pressione qualquer tecla e tente novamente...");
     getch();
 }
 
