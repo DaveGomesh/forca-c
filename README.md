@@ -1,4 +1,4 @@
 # forca-c
  Jogo da Forca.
 
-@lucasnadler
+David Gomesh e [Lucas Nadler]("https://github.com/lucasnadler")
